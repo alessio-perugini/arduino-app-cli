@@ -14,6 +14,7 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	go.bug.st/cleanup v1.0.0
 	go.bug.st/f v0.4.0
+	go.bug.st/serial v1.6.4
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -33,6 +34,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.26.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.30.5 // indirect
 	github.com/aws/smithy-go v1.20.4 // indirect
+	github.com/creack/goselect v0.1.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 )
