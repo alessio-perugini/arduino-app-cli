@@ -27,7 +27,7 @@ func init() {
 
 	pythonImage = registryBase
 	if repoTag != "" {
-		pythonImage += ":" + repoTag
+		pythonImage += "appslab-modules:" + repoTag
 	}
 	fmt.Println("Using pythonImage: ", pythonImage)
 }
@@ -130,17 +130,12 @@ func pullBasePythonContainer(ctx context.Context) {
 
 func provisionHandler(ctx context.Context, docker *dockerClient.Client, app parser.App) {
 	pullBasePythonContainer(ctx)
-	pwd, _ := os.Getwd()
 	resp, err := docker.ContainerCreate(ctx, &container.Config{
 		Image:      pythonImage,
 		User:       getCurrentUser(),
 		Entrypoint: []string{"/run.sh", "provision"},
 	}, &container.HostConfig{
-		Binds: []string{
-			app.FullPath.String() + ":/app",
-			pwd + "/scripts/provision.py:/provision.py",
-			pwd + "/scripts/run.sh:/run.sh",
-		},
+		Binds:      []string{app.FullPath.String() + ":/app"},
 		AutoRemove: true,
 	}, nil, nil, app.Name)
 	if err != nil {
@@ -221,7 +216,6 @@ func generateMainComposeFile(ctx context.Context, app parser.App) {
 	if len(stderr) > 0 {
 		fmt.Println("stderr:", string(stderr))
 	}
-	pwd, _ := os.Getwd()
 	services := strings.Split(strings.TrimSpace(string(stdout)), "\n")
 	services = f.Filter(services, f.NotEquals("main"))
 
@@ -232,11 +226,8 @@ func generateMainComposeFile(ctx context.Context, app parser.App) {
 
 	mainAppCompose.Services = &mainService{
 		Main: service{
-			Image: pythonImage, // TODO: when we will handle versioning change this
-			Volumes: []string{
-				app.FullPath.String() + ":/app",
-				pwd + "/scripts/run.sh:/run.sh",
-			},
+			Image:      pythonImage, // TODO: when we will handle versioning change this
+			Volumes:    []string{app.FullPath.String() + ":/app"},
 			Ports:      ports,
 			Devices:    getDevices(),
 			Entrypoint: "/run.sh",
