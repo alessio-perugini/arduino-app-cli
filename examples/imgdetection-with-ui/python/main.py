@@ -2,7 +2,6 @@ from appslab.modules.objectdetection import ObjectDetection
 from appslab.core.image import draw_bounding_boxes
 import logging
 import gradio as gr
-import pandas as pd
 import time
 
 logging.basicConfig(level=logging.INFO)
@@ -64,19 +63,9 @@ def process_image(input_image):
             cfd.append(box['confidence'])
             count.append(1)
 
-        # Generate detection classification dataframe
-        detection_dataframe = pd.DataFrame(
-            {
-                "count": count,
-                "object": objects,
-            }
-        )
-        detection_dataframe_table = pd.DataFrame(
-            {
-                "Detected object": objects,
-                "Confidence %": cfd,
-            }
-        )
+        detection_data_table = []
+        for obj, conf in zip(objects, cfd):
+            detection_data_table.append([obj, conf])
 
         img_with_boxes = None
         try:
@@ -84,7 +73,7 @@ def process_image(input_image):
         except Exception as e:
             logger.error(f"Error drawing bounding boxes: {e}")
 
-        return img_with_boxes, detection_dataframe, detection_dataframe_table
+        return img_with_boxes, detection_data_table
     except Exception as e:
         print(e)
         logger.error(f"Error processing image: {e}")
@@ -130,18 +119,12 @@ with gr.Blocks(theme=theme,
 
             gr.HTML("<hr>")
 
-            object_detection_report = gr.BarPlot(
-                x="count",
-                y="object",
-                y_aggregate="sum",
+            table_summary = gr.DataFrame(
+                headers=["Detected object", "Confidence %"]
             )
-            
-            gr.HTML("<hr>")
 
-            table_summary = gr.DataFrame()
-
-    btn.click(process_image, inputs=image_input, outputs=[image_box, object_detection_report, table_summary])
+    btn.click(process_image, inputs=image_input, outputs=[image_box, table_summary])
 
 
 if __name__ == "__main__":
-    built_ui.queue().launch(debug=False, server_name="0.0.0.0", server_port=7860, share=False, favicon_path="python/favicon.ico")
+    built_ui.queue().launch(debug=False, server_name="0.0.0.0", server_port=7860, share=False)

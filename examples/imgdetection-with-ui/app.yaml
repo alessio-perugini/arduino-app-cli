@@ -5,7 +5,5 @@ ports:
   - 7860
 
 module-dependencies:
-  - arduino/object_detection
-
-models:
-  - vision/yolo11
+  - arduino/object_detection:
+      model: vision/yolo11

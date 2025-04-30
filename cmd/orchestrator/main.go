@@ -22,14 +22,17 @@ import (
 var pythonImage string
 
 func init() {
+	// Registry base: contains the registry and namespace, common to all Arduino docker images.
 	registryBase := os.Getenv("DOCKER_REGISTRY_BASE")
-	repoTag := os.Getenv("DOCKER_TAG")
+
+	// Python image: image name (repository) and optionally a tag.
+	pythonImageAndTag := os.Getenv("DOCKER_PYTHON_BASE_IMAGE")
 
 	pythonImage = registryBase
-	if repoTag != "" {
-		pythonImage += "appslab-modules:" + repoTag
+	if pythonImageAndTag != "" {
+		pythonImage += pythonImageAndTag
 	}
-	fmt.Println("Using pythonImage: ", pythonImage)
+	fmt.Println("Using pythonImage:", pythonImage)
 }
 
 func main() {
@@ -142,18 +145,20 @@ func provisionHandler(ctx context.Context, docker *dockerClient.Client, app pars
 		log.Panic(err)
 	}
 
+	fmt.Println("\nLaunching the base Python image to get the modules/bricks details...")
+
 	waitCh, errCh := docker.ContainerWait(ctx, resp.ID, container.WaitConditionNextExit)
 	if err := docker.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		log.Panic(err)
 	}
-	fmt.Println("Container started with ID:", resp.ID)
+	fmt.Println("Provisioning container started with ID:", resp.ID)
 
 	select {
 	case result := <-waitCh:
 		if result.Error != nil {
-			log.Panic("Container wait error:", result.Error.Message)
+			log.Panic("Provisioning container wait error:", result.Error.Message)
 		}
-		fmt.Println("Container exited with status code:", result.StatusCode)
+		fmt.Println("Provisioning container exited with status code:", result.StatusCode)
 	case err := <-errCh:
 		log.Panic("Error waiting for container:", err)
 	}
@@ -166,9 +171,12 @@ func generateMainComposeFile(ctx context.Context, app parser.App) {
 
 	var composeFiles paths.PathList
 	for _, dep := range app.Descriptor.ModuleDependencies {
-		composeFilePath := provisioningStateDir.Join("compose", dep, "module_compose.yaml")
+		composeFilePath := provisioningStateDir.Join("compose", dep.Name, "module_compose.yaml")
 		if composeFilePath.Exist() {
 			composeFiles.Add(composeFilePath)
+			fmt.Printf("- Using module: %s\n", dep.Name)
+		} else {
+			fmt.Printf("- Using module: %s (not found)\n", dep.Name)
 		}
 	}
 
@@ -204,6 +212,8 @@ func generateMainComposeFile(ctx context.Context, app parser.App) {
 	mainAppCompose.Name = app.Name
 	writeMainCompose()
 
+	fmt.Printf("\nCompose file for the App '\033[0;35m%s\033[0m' created, launching...\n", app.Name)
+
 	// docker compose -f app-compose.yml config --services
 	process, err := paths.NewProcess(nil, "docker", "compose", "-f", mainComposeFile.String(), "config", "--services")
 	if err != nil {
@@ -211,7 +221,7 @@ func generateMainComposeFile(ctx context.Context, app parser.App) {
 	}
 	stdout, stderr, err := process.RunAndCaptureOutput(ctx)
 	if err != nil {
-		log.Panic(err)
+		log.Panic(err, " stderr:"+string(stderr))
 	}
 	if len(stderr) > 0 {
 		fmt.Println("stderr:", string(stderr))
@@ -252,7 +262,7 @@ func startHandler(ctx context.Context, app parser.App) {
 		log.Panic(err)
 	}
 
-	fmt.Println("Docker Compose project started in detached mode.")
+	fmt.Printf("App '\033[0;35m%s\033[0m' started: Docker Compose running in detached mode.\n", app.Name)
 }
 
 func stopHandler(ctx context.Context, app parser.App) {
@@ -269,7 +279,7 @@ func stopHandler(ctx context.Context, app parser.App) {
 		log.Panic(err)
 	}
 
-	fmt.Println("Container stopped and removed")
+	fmt.Printf("Containers for the App '\033[0;35m%s\033[0m' stopped and removed\n", app.Name)
 }
 
 // TODO: for now we show only logs for the main python container.

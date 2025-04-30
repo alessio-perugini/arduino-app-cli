@@ -1,0 +1,8 @@
+display-name: Wrong app
+description: Wrong app
+
+ports:
+  - 7860
+
+module-dependencies:
+  - arduino/object_detection: something
