@@ -42,13 +42,6 @@ func NewArduinoPlatformUpdater() *ArduinoPlatformUpdater {
 
 func setConfig(ctx context.Context, srv rpc.ArduinoCoreServiceServer) error {
 	if _, err := srv.SettingsSetValue(ctx, &rpc.SettingsSetValueRequest{
-		Key:          "board_manager.additional_urls",
-		EncodedValue: "https://apt-repo.arduino.cc/zephyr-core-imola.json",
-		ValueFormat:  "cli",
-	}); err != nil {
-		return err
-	}
-	if _, err := srv.SettingsSetValue(ctx, &rpc.SettingsSetValueRequest{
 		Key:          "network.connection_timeout",
 		EncodedValue: "600s",
 		ValueFormat:  "cli",
