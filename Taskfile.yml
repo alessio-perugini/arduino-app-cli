@@ -114,7 +114,7 @@ tasks:
           echo "Runner version set as: {{ .EXAMPLE_VERSION }}"
           TMP_PATH="$(mktemp -d)"
           DEST_PATH="debian/arduino-app-cli/home/arduino/.local/share/arduino-app-cli/"
-          echo "Cloning arduino/app-bricks-example into temporary directory ${TMP_PATH}..."
+          echo "Cloning arduino/app-bricks-examples into temporary directory ${TMP_PATH}..."
           git clone --depth 1 --branch "{{ .EXAMPLE_VERSION }}" https://github.com/arduino/app-bricks-examples "${TMP_PATH}"
           rm -rf "${DEST_PATH}/examples"
           mkdir -p "${DEST_PATH}"
@@ -190,7 +190,7 @@ tasks:
           TMP_PATH="$(mktemp -d)"
 
           echo "Cloning examples into temporary directory ${TMP_PATH}..."
-          git clone --depth 1 https://github.com/arduino/app-bricks-example.git "${TMP_PATH}"
+          git clone --depth 1 https://github.com/arduino/app-bricks-examples.git "${TMP_PATH}"
 
           echo "Installing examples to ${DEST_PATH}examples"
           rm -rf "${DEST_PATH}examples"
