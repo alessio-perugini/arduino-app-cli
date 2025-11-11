@@ -8,6 +8,7 @@ import (
 
 	cmdApp "github.com/arduino/arduino-app-cli/cmd/arduino-app-cli/app"
 	"github.com/arduino/arduino-app-cli/cmd/arduino-app-cli/completion"
+	"github.com/arduino/arduino-app-cli/cmd/arduino-app-cli/internal/servicelocator"
 	"github.com/arduino/arduino-app-cli/cmd/feedback"
 	"github.com/arduino/arduino-app-cli/internal/orchestrator"
 	"github.com/arduino/arduino-app-cli/internal/orchestrator/app"
@@ -15,6 +16,7 @@ import (
 )
 
 func newCacheCleanCmd(cfg config.Configuration) *cobra.Command {
+	var forceClean bool
 	appCmd := &cobra.Command{
 		Use:   "clean",
 		Short: "Delete app cache",
@@ -26,16 +28,23 @@ func newCacheCleanCmd(cfg config.Configuration) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return cacheCleanHandler(cmd.Context(), app)
+			return cacheCleanHandler(cmd.Context(), app, forceClean)
 		},
 		ValidArgsFunction: completion.ApplicationNames(cfg),
 	}
+	appCmd.Flags().BoolVarP(&forceClean, "force", "", false, "Forcefully clean the cache even if the app is running")
 
 	return appCmd
 }
 
-func cacheCleanHandler(ctx context.Context, app app.ArduinoApp) error {
-	if err := orchestrator.CleanAppCache(ctx, app); err != nil {
+func cacheCleanHandler(ctx context.Context, app app.ArduinoApp, forceClean bool) error {
+	err := orchestrator.CleanAppCache(
+		ctx,
+		servicelocator.GetDockerClient(),
+		app,
+		orchestrator.CleanAppCacheRequest{ForceClean: forceClean},
+	)
+	if err != nil {
 		feedback.Fatal(err.Error(), feedback.ErrGeneric)
 	}
 	feedback.PrintResult(cacheCleanResult{

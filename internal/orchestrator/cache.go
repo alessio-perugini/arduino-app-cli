@@ -2,16 +2,39 @@ package orchestrator
 
 import (
 	"context"
+	"errors"
+
+	"github.com/docker/cli/cli/command"
 
 	"github.com/arduino/arduino-app-cli/internal/orchestrator/app"
 )
 
+type CleanAppCacheRequest struct {
+	ForceClean bool
+}
+
+var ErrCleanCacheRunningApp = errors.New("cannot remove cache of a running app")
+
 // CleanAppCache removes the `.cache` folder. If it detects that the app is running
 // it tries to stop it first.
-func CleanAppCache(ctx context.Context, app app.ArduinoApp) error {
-	if app.AppComposeFilePath().Exist() {
+func CleanAppCache(
+	ctx context.Context,
+	docker command.Cli,
+	app app.ArduinoApp,
+	req CleanAppCacheRequest,
+) error {
+	runningApp, err := getRunningApp(ctx, docker.Client())
+	if err != nil {
+		return err
+	}
+	if runningApp.FullPath.EqualsTo(app.FullPath) {
+		return ErrCleanCacheRunningApp
+	}
+
+	if req.ForceClean && app.AppComposeFilePath().Exist() {
 		// We try to remove docker related resources at best effort
 		_ = StopAndDestroyApp(ctx, app)
 	}
+
 	return app.ProvisioningStateDir().RemoveAll()
 }
