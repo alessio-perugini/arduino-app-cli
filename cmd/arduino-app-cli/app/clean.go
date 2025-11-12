@@ -1,4 +1,4 @@
-package cache
+package app
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	cmdApp "github.com/arduino/arduino-app-cli/cmd/arduino-app-cli/app"
 	"github.com/arduino/arduino-app-cli/cmd/arduino-app-cli/completion"
 	"github.com/arduino/arduino-app-cli/cmd/arduino-app-cli/internal/servicelocator"
 	"github.com/arduino/arduino-app-cli/cmd/feedback"
@@ -18,13 +17,14 @@ import (
 func newCacheCleanCmd(cfg config.Configuration) *cobra.Command {
 	var forceClean bool
 	appCmd := &cobra.Command{
-		Use:   "clean",
+		Use:   "clean-cache",
 		Short: "Delete app cache",
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return cmd.Help()
 			}
-			app, err := cmdApp.Load(args[0])
+			app, err := Load(args[0])
 			if err != nil {
 				return err
 			}

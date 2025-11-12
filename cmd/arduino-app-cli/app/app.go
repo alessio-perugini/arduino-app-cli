@@ -40,6 +40,7 @@ func NewAppCmd(cfg config.Configuration) *cobra.Command {
 	appCmd.AddCommand(newListCmd(cfg))
 	appCmd.AddCommand(newPsCmd())
 	appCmd.AddCommand(newMonitorCmd(cfg))
+	appCmd.AddCommand(newCacheCleanCmd(cfg))
 
 	return appCmd
 }

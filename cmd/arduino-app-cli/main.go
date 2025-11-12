@@ -26,7 +26,6 @@ import (
 
 	"github.com/arduino/arduino-app-cli/cmd/arduino-app-cli/app"
 	"github.com/arduino/arduino-app-cli/cmd/arduino-app-cli/brick"
-	"github.com/arduino/arduino-app-cli/cmd/arduino-app-cli/cache"
 	"github.com/arduino/arduino-app-cli/cmd/arduino-app-cli/completion"
 	"github.com/arduino/arduino-app-cli/cmd/arduino-app-cli/config"
 	"github.com/arduino/arduino-app-cli/cmd/arduino-app-cli/daemon"
@@ -79,7 +78,6 @@ func run(configuration cfg.Configuration) error {
 		config.NewConfigCmd(configuration),
 		system.NewSystemCmd(configuration),
 		version.NewVersionCmd(Version),
-		cache.NewCacheCmd(configuration),
 	)
 
 	ctx := context.Background()
