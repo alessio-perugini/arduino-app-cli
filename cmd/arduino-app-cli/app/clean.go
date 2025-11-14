@@ -17,13 +17,10 @@ import (
 func newCacheCleanCmd(cfg config.Configuration) *cobra.Command {
 	var forceClean bool
 	appCmd := &cobra.Command{
-		Use:   "clean-cache",
+		Use:   "clean-cache <app-id>",
 		Short: "Delete app cache",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 0 {
-				return cmd.Help()
-			}
 			app, err := Load(args[0])
 			if err != nil {
 				return err

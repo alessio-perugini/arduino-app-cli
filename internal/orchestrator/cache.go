@@ -28,10 +28,9 @@ func CleanAppCache(
 		return err
 	}
 	if runningApp.FullPath.EqualsTo(app.FullPath) {
-		return ErrCleanCacheRunningApp
-	}
-
-	if req.ForceClean && app.AppComposeFilePath().Exist() {
+		if !req.ForceClean {
+			return ErrCleanCacheRunningApp
+		}
 		// We try to remove docker related resources at best effort
 		_ = StopAndDestroyApp(ctx, app)
 	}
