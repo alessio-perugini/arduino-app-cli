@@ -27,7 +27,7 @@ func CleanAppCache(
 	if err != nil {
 		return err
 	}
-	if runningApp.FullPath.EqualsTo(app.FullPath) {
+	if runningApp != nil && runningApp.FullPath.EqualsTo(app.FullPath) {
 		if !req.ForceClean {
 			return ErrCleanCacheRunningApp
 		}
